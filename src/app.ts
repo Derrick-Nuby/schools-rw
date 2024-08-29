@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import userRoutes from "./routes/user.js";
 import categoryRoutes from "./routes/category.js";
 import combinationRoutes from "./routes/combination.js";
+import schoolRoutes from "./routes/school.js";
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use('/api/user', userRoutes);
 app.use('/api/category', categoryRoutes);
 app.use('/api/combination', combinationRoutes);
+app.use('/api/school', schoolRoutes);
 app.get('/', (req, res) => {
     res.send('welcome to base app');
 });
