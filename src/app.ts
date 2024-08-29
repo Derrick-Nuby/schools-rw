@@ -2,7 +2,10 @@ import express, { Express } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-// import nameRoutes from "./routes/name.js";
+import userRoutes from "./routes/user.js";
+import categoryRoutes from "./routes/category.js";
+import combinationRoutes from "./routes/combination.js";
+import schoolRoutes from "./routes/school.js";
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -21,7 +24,10 @@ app.use(cors({
 
 app.use(cookieParser());
 app.use(express.json());
-// app.use('/api/name', nameRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/category', categoryRoutes);
+app.use('/api/combination', combinationRoutes);
+app.use('/api/school', schoolRoutes);
 app.get('/', (req, res) => {
     res.send('welcome to base app');
 });
