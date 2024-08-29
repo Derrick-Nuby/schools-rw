@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/user.js";
 import categoryRoutes from "./routes/category.js";
+import combinationRoutes from "./routes/combination.js";
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -24,6 +25,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use('/api/user', userRoutes);
 app.use('/api/category', categoryRoutes);
+app.use('/api/combination', combinationRoutes);
 app.get('/', (req, res) => {
     res.send('welcome to base app');
 });
