@@ -2,7 +2,7 @@ import express, { Express } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-// import nameRoutes from "./routes/name.js";
+import userRoutes from "./routes/user.js";
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -21,7 +21,7 @@ app.use(cors({
 
 app.use(cookieParser());
 app.use(express.json());
-// app.use('/api/name', nameRoutes);
+app.use('/api/user', userRoutes);
 app.get('/', (req, res) => {
     res.send('welcome to base app');
 });
