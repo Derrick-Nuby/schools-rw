@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/user.js";
+import categoryRoutes from "./routes/category.js";
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -22,6 +23,7 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 app.use('/api/user', userRoutes);
+app.use('/api/category', categoryRoutes);
 app.get('/', (req, res) => {
     res.send('welcome to base app');
 });
