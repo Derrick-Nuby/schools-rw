@@ -1,11 +1,17 @@
 import { Response, Request } from "express";
 import { ICombination } from "../types/combination.js";
 import Combination from "../models/combination.js";
+import category from "../models/category.js";
 
 
 const getAllCombinations = async (req: Request, res: Response): Promise<any> => {
     try {
-        const combinations: ICombination[] = await Combination.find();
+        const combinations: ICombination[] = await Combination.find()
+            .populate({
+                path: 'category_id',
+                model: category,
+                select: '_id name description applicable_grades',
+            });;
 
         if (combinations.length === 0) {
             res.status(404).json({ error: "no combinations found!" });
@@ -65,7 +71,7 @@ const updateCombination = async (req: Request, res: Response): Promise<any> => {
                 category_id,
                 description,
             },
-            { new: true }  // This option returns the modified document rather than the original
+            { new: true }
         );
 
         if (!updatedCombination) {

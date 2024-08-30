@@ -1,19 +1,52 @@
 import { Response, Request } from "express";
 import { ISchool } from "../types/school.js";
 import School from "../models/school.js";
+import Combination from "../models/combination.js";
+import dotenv from 'dotenv';
+dotenv.config();
+
+const responseNumber: number = Number(process.env.RES_NUMBER) || 16;
 
 
 const getAllSchools = async (req: Request, res: Response): Promise<any> => {
     try {
-        const schools: ISchool[] = await School.find();
+        const page: number = Number(req.query.page) || 1;
+        const limit: number = Number(req.query.limit) || responseNumber;
 
-        if (schools.length === 0) {
-            res.status(404).json({ error: "no schools found!" });
+        if (limit >= 40) {
+            res.status(400).json({ error: "that request is too large for our systems; please use below 20" });
             return;
         }
-        res.status(200).json({ message: "These are all the schools you have", schools });
+
+        const skip: number = (page - 1) * limit;
+
+        const schools: ISchool[] = await School.find()
+            .skip(skip)
+            .limit(limit)
+            .populate({
+                path: 'combination_ids',
+                model: Combination,
+                select: '_id name abbreviation category_id description',
+            });
+
+        const totalSchools: number = await School.countDocuments();
+
+        if (schools.length === 0) {
+            return res.status(404).json({ error: "No schools found!" });
+        }
+
+        const totalPages: number = Math.ceil(totalSchools / limit);
+
+        return res.status(200).json({
+            message: "These are the schools you requested",
+            currentPage: page,
+            totalPages,
+            totalSchools,
+            schools,
+        });
     } catch (error) {
-        throw error;
+        console.error("Error fetching schools:", error);
+        return res.status(500).json({ error: "Internal server error" });
     }
 };
 
@@ -113,5 +146,85 @@ const deleteSchool = async (req: Request, res: Response): Promise<any> => {
     }
 };
 
+const searchSchool = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const searchQuery = req.query.query as string;
+        const district = req.query.district as string;
+        const school_status = req.query.school_status as string;
+        const school_type = req.query.school_type as string;
+        const sector_name = req.query.sector_name as string;
+        const cell_name = req.query.cell_name as string;
+        const combination_ids = req.query.combination_ids as string | string[];
 
-export { getAllSchools, getSingleSchool, createSchool, updateSchool, deleteSchool };
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+
+        if (!searchQuery || searchQuery.length < 2) {
+            res.status(404).json({ error: "please increase the words you are searching for" });
+            return;
+        }
+
+        const filter: any = {
+            $text: { $search: searchQuery, $caseSensitive: false, $diacriticSensitive: false }
+        };
+
+        if (district) {
+            filter.district_name = { $regex: new RegExp(district, 'i') };
+        }
+        if (school_status) {
+            filter.school_status = { $regex: new RegExp(school_status, 'i') };
+        }
+        if (school_type) {
+            filter.school_type = { $regex: new RegExp(school_type, 'i') };
+        }
+        if (sector_name) {
+            filter.sector_name = { $regex: new RegExp(sector_name, 'i') };
+        }
+        if (cell_name) {
+            filter.cell_name = { $regex: new RegExp(cell_name, 'i') };
+        }
+
+        if (combination_ids) {
+            if (Array.isArray(combination_ids)) {
+                filter.combination_ids = { $in: combination_ids };
+            } else {
+                filter.combination_ids = combination_ids;
+            }
+        }
+
+        const skip = (page - 1) * limit;
+
+        const schools = await School.find(filter)
+            .select({ score: { $meta: 'textScore' } })
+            .sort({ score: { $meta: 'textScore' } })
+            .skip(skip)
+            .limit(limit)
+            .lean()
+            .populate({
+                path: 'combination_ids',
+                model: Combination,
+                select: '_id name abbreviation category_id description',
+            });
+
+
+
+        const totalSchools = await School.countDocuments(filter);
+
+        res.json({
+            pagination: {
+                totalSchools,
+                currentPage: page,
+                totalPages: Math.ceil(totalSchools / limit),
+                resultsPerPage: limit,
+            },
+            schools,
+        });
+    } catch (error) {
+        console.error("Error searching for schools:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
+
+export { getAllSchools, getSingleSchool, createSchool, updateSchool, deleteSchool, searchSchool };
