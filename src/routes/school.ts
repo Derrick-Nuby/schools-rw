@@ -2,11 +2,12 @@ import { Router } from "express";
 import { getAllSchools, getSingleSchool, createSchool, updateSchool, deleteSchool, searchSchool } from "../controllers/school.js";
 import { validateSchool, validateUpdateSchool } from "../middleware/schoolValidation.js";
 import { adminAuthJWT, userAuthJWT } from '../middleware/auth.js';
+import { validateSchoolSearch } from '../middleware/validateSchoolSearch.js';
 
 const router: Router = Router();
 
 router.get("/", getAllSchools);
-router.get("/search", searchSchool);
+router.get("/search", validateSchoolSearch, searchSchool);
 router.get("/:id", getSingleSchool);
 router.post("/", adminAuthJWT, validateSchool, createSchool);
 router.put("/:id", adminAuthJWT, validateUpdateSchool, updateSchool);
