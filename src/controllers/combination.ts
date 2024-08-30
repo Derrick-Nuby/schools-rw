@@ -65,7 +65,7 @@ const updateCombination = async (req: Request, res: Response): Promise<any> => {
                 category_id,
                 description,
             },
-            { new: true }  // This option returns the modified document rather than the original
+            { new: true }
         );
 
         if (!updatedCombination) {
