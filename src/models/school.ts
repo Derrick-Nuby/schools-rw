@@ -48,4 +48,6 @@ const SchoolSchema: Schema = new Schema({
     }],
 });
 
+SchoolSchema.index({ school_name: 'text', district_name: 'text' });
+
 export default mongoose.model<ISchool>('School', SchoolSchema);
