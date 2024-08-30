@@ -199,7 +199,12 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
             .sort({ score: { $meta: 'textScore' } })
             .skip(skip)
             .limit(limit)
-            .lean();
+            .lean()
+            .populate({
+                path: 'combination_ids',
+                model: Combination,
+                select: '_id name abbreviation category_id description',
+            });
 
 
 
