@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createAccount, loginUser, getAllUsers, modifyUser, deleteUser, logoutUser, getSingleUser, cookieCreator } from "../controllers/user.js";
+import { createAccount, loginUser, getAllUsers, modifyUser, deleteUser, logoutUser, getSingleUser } from "../controllers/user.js";
 import { validateUserRegister, validateUserLogin, validateUserUpdate } from '../middleware/userValidation.js';
 import { adminAuthJWT, userAuthJWT } from '../middleware/auth.js';
 

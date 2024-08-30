@@ -1,50 +1,13 @@
 import bcrypt from "bcryptjs";
 import { Response, Request } from "express";
+import jwt from 'jsonwebtoken';
 import { IUser } from "../types/user.js";
 import User from "../models/user.js";
 import dotenv from 'dotenv';
 dotenv.config();
 
-import jwt from 'jsonwebtoken';
-
 
 const jwtSecret = process.env.JWT_SECRET || 'defaultSecret';
-
-const cookieCreator = async (req: Request, res: Response): Promise<any> => {
-  try {
-    // Fetch the first user from the database
-    const user = await User.findOne();
-
-    if (!user) {
-      return res.status(404).json({ error: 'No users found in the database' });
-    }
-
-    const { id, name, email, isAdmin } = user;
-
-    // Create a token for the user
-    const token = jwt.sign(
-      { id, username: name, email, isAdmin },
-      jwtSecret,
-      { expiresIn: '1y' }
-    );
-
-    // Set the token as a cookie that expires in one year
-    const expiryDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year
-
-    res.cookie('jwt', token, { httpOnly: true, path: '/', expires: expiryDate });
-
-    // Respond with a success message
-    res.status(200).json({
-      message: 'Cookie created successfully',
-      token,
-      user: { id, username: name, email, isAdmin }
-    });
-  } catch (error) {
-    console.error("Error creating cookie:", error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
-
 
 const createAccount = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -103,7 +66,6 @@ const loginUser = async (req: Request, res: Response): Promise<any> => {
 
       res.status(200).json({ message: "User logged in successfully", user: { id, username: name, email: userEmail, isAdmin }, token });
   } catch (error) {
-    // Handle any errors
     console.error("Error logging in:", error);
     res.status(500).json({ error: "Internal server error" });
   }
@@ -125,9 +87,7 @@ const modifyUser = async (req: Request, res: Response): Promise<any> => {
     const updateFields = req.body;
     const { name, phone, email, password } = req.body;
 
-    // Check if the 'password' field is being updated
     if (updateFields.password) {
-      // Hash the new password
       updateFields.password = await bcrypt.hash(updateFields.password, 10);
     }
 
@@ -240,4 +200,4 @@ const getSingleUser = async (req: Request, res: Response): Promise<any> => {
 
 
 
-export { createAccount, loginUser, getAllUsers, modifyUser, deleteUser, logoutUser, getSingleUser, cookieCreator };
+export { createAccount, loginUser, getAllUsers, modifyUser, deleteUser, logoutUser, getSingleUser };
