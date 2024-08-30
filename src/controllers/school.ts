@@ -159,15 +159,18 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
 
-        if (!searchQuery || searchQuery.length < 2) {
-            res.status(404).json({ error: "please increase the words you are searching for" });
-            return;
+        const filter: any = {};
+
+        // Only add $text search if searchQuery is provided and meets minimum length
+        if (searchQuery && searchQuery.length >= 2) {
+            filter.$text = {
+                $search: searchQuery,
+                $caseSensitive: false,
+                $diacriticSensitive: false
+            };
         }
 
-        const filter: any = {
-            $text: { $search: searchQuery, $caseSensitive: false, $diacriticSensitive: false }
-        };
-
+        // Add other filters if they are provided
         if (district) {
             if (Array.isArray(district)) {
                 filter.district_name = { $in: district.map(d => new RegExp(d, 'i')) };
@@ -200,8 +203,8 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
         const skip = (page - 1) * limit;
 
         const schools = await School.find(filter)
-            .select({ score: { $meta: 'textScore' } })
-            .sort({ score: { $meta: 'textScore' } })
+            .select(searchQuery ? { score: { $meta: 'textScore' } } : {})
+            .sort(searchQuery ? { score: { $meta: 'textScore' } } : {})
             .skip(skip)
             .limit(limit)
             .lean()
@@ -210,8 +213,6 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
                 model: Combination,
                 select: '_id name abbreviation category_id description',
             });
-
-
 
         const totalSchools = await School.countDocuments(filter);
 
