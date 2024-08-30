@@ -149,7 +149,7 @@ const deleteSchool = async (req: Request, res: Response): Promise<any> => {
 const searchSchool = async (req: Request, res: Response): Promise<void> => {
     try {
         const searchQuery = req.query.query as string;
-        const district = req.query.district as string;
+        const district = req.query.district as string | string[];
         const school_status = req.query.school_status as string;
         const school_type = req.query.school_type as string;
         const sector_name = req.query.sector_name as string;
@@ -169,8 +169,13 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
         };
 
         if (district) {
-            filter.district_name = { $regex: new RegExp(district, 'i') };
+            if (Array.isArray(district)) {
+                filter.district_name = { $in: district.map(d => new RegExp(d, 'i')) };
+            } else {
+                filter.district_name = { $regex: new RegExp(district, 'i') };
+            }
         }
+
         if (school_status) {
             filter.school_status = { $regex: new RegExp(school_status, 'i') };
         }
