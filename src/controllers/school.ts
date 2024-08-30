@@ -154,6 +154,7 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
         const school_type = req.query.school_type as string;
         const sector_name = req.query.sector_name as string;
         const cell_name = req.query.cell_name as string;
+        const combination_ids = req.query.combination_ids as string | string[];
 
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
@@ -181,6 +182,14 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
         }
         if (cell_name) {
             filter.cell_name = { $regex: new RegExp(cell_name, 'i') };
+        }
+
+        if (combination_ids) {
+            if (Array.isArray(combination_ids)) {
+                filter.combination_ids = { $in: combination_ids };
+            } else {
+                filter.combination_ids = combination_ids;
+            }
         }
 
         const skip = (page - 1) * limit;
