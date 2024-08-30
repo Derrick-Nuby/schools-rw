@@ -1,19 +1,45 @@
 import { Response, Request } from "express";
 import { ISchool } from "../types/school.js";
 import School from "../models/school.js";
+import dotenv from 'dotenv';
+dotenv.config();
+
+const responseNumber: number = Number(process.env.RES_NUMBER) || 16;
 
 
 const getAllSchools = async (req: Request, res: Response): Promise<any> => {
     try {
-        const schools: ISchool[] = await School.find();
+        const page: number = Number(req.query.page) || 1;
+        const limit: number = Number(req.query.limit) || responseNumber;
 
-        if (schools.length === 0) {
-            res.status(404).json({ error: "no schools found!" });
+        if (limit >= 40) {
+            res.status(400).json({ error: "that request is too large for our systems; please use below 20" });
             return;
         }
-        res.status(200).json({ message: "These are all the schools you have", schools });
+
+        const skip: number = (page - 1) * limit;
+
+        const schools: ISchool[] = await School.find().skip(skip).limit(limit);
+
+        const totalSchools: number = await School.countDocuments();
+
+        if (schools.length === 0) {
+            res.status(404).json({ error: "No schools found!" });
+            return;
+        }
+
+        const totalPages: number = Math.ceil(totalSchools / limit);
+
+        res.status(200).json({
+            message: "These are the schools you requested",
+            currentPage: page,
+            totalPages,
+            totalSchools,
+            schools,
+        });
     } catch (error) {
-        throw error;
+        console.error("Error fetching schools:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 };
 
