@@ -1,6 +1,7 @@
 import { Response, Request } from "express";
 import { ISchool } from "../types/school.js";
 import School from "../models/school.js";
+import Combination from "../models/combination.js";
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -140,4 +141,47 @@ const deleteSchool = async (req: Request, res: Response): Promise<any> => {
 };
 
 
-export { getAllSchools, getSingleSchool, createSchool, updateSchool, deleteSchool };
+const getAllSchoolsWithDetails = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const page: number = Number(req.query.page) || 1;
+        const limit: number = Number(req.query.limit) || responseNumber;
+
+        if (limit >= 40) {
+            res.status(400).json({ error: "that request is too large for our systems; please use below 20" });
+            return;
+        }
+
+        const skip: number = (page - 1) * limit;
+
+        const schools: ISchool[] = await School.find()
+            .skip(skip)
+            .limit(limit)
+            .populate({
+                path: 'combination_ids',
+                model: Combination,
+                select: '_id name abbreviation category_id description',
+            });
+
+        const totalSchools: number = await School.countDocuments();
+
+        if (schools.length === 0) {
+            return res.status(404).json({ error: "No schools found!" });
+        }
+
+        const totalPages: number = Math.ceil(totalSchools / limit);
+
+        return res.status(200).json({
+            message: "These are the schools you requested",
+            currentPage: page,
+            totalPages,
+            totalSchools,
+            schools,
+        });
+    } catch (error) {
+        console.error("Error fetching schools:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
+export { getAllSchools, getSingleSchool, createSchool, updateSchool, deleteSchool, getAllSchoolsWithDetails };
