@@ -10,11 +10,14 @@ const schoolSearchSchema = Joi.object({
       'string.base': 'Search query must be a string',
       'string.min': 'School search must be {#limit} characters or long',
     }),
-  district: Joi.string()
-    .optional()
-    .messages({
+  district: Joi.alternatives().try(
+    Joi.array().items(Joi.string().messages({
+      'string.base': 'Each district must be a string',
+    })),
+    Joi.string().messages({
       'string.base': 'District must be a string',
-    }),
+    })
+  ).optional(),
   school_status: Joi.string()
     .optional()
     .messages({
