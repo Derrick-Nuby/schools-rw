@@ -161,7 +161,6 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
 
         const filter: any = {};
 
-        // Only add $text search if searchQuery is provided and meets minimum length
         if (searchQuery && searchQuery.length >= 2) {
             filter.$text = {
                 $search: searchQuery,
@@ -170,7 +169,6 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
             };
         }
 
-        // Add other filters if they are provided
         if (district) {
             if (Array.isArray(district)) {
                 filter.district_name = { $in: district.map(d => new RegExp(d, 'i')) };
