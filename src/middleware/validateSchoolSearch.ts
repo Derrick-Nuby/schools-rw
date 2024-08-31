@@ -18,16 +18,35 @@ const schoolSearchSchema = Joi.object({
       'string.base': 'District must be a string',
     })
   ).optional(),
-  school_status: Joi.string()
-    .optional()
-    .messages({
-      'string.base': 'School status must be a string',
-    }),
-  school_type: Joi.string()
-    .optional()
-    .messages({
-      'string.base': 'School type must be a string',
-    }),
+  school_status: Joi.alternatives()
+    .try(
+      Joi.array()
+        .items(Joi.string())
+        .required()
+        .messages({
+          'array.base': 'School statuses must be an array',
+        }),
+      Joi.string()
+        .optional()
+        .messages({
+          'string.base': 'School status must be a string',
+        }),
+    ).optional(),
+  school_type: Joi.alternatives()
+    .try(
+      Joi.array()
+        .items(Joi.string())
+        .required()
+        .messages({
+          'array.base': 'school types must be an array',
+        }),
+      Joi.string()
+        .optional()
+        .messages({
+          'string.base': 'School type must be a string',
+        }),
+    ).optional(),
+
   sector_name: Joi.string()
     .optional()
     .messages({

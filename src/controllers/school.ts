@@ -150,8 +150,8 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
     try {
         const searchQuery = req.query.query as string;
         const district = req.query.district as string | string[];
-        const school_status = req.query.school_status as string;
-        const school_type = req.query.school_type as string;
+        const school_status = req.query.school_status as string | string[];
+        const school_type = req.query.school_type as string | string[];
         const sector_name = req.query.sector_name as string;
         const cell_name = req.query.cell_name as string;
         const combination_ids = req.query.combination_ids as string | string[];
@@ -178,10 +178,18 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
         }
 
         if (school_status) {
-            filter.school_status = { $regex: new RegExp(school_status, 'i') };
+            if (Array.isArray(school_status)) {
+                filter.status = { $in: school_status.map(d => new RegExp(d, 'i')) };
+            } else {
+                filter.school_status = { $regex: new RegExp(school_status, 'i') };
+            }
         }
         if (school_type) {
-            filter.school_type = { $regex: new RegExp(school_type, 'i') };
+            if (Array.isArray(school_type)) {
+                filter.type = { $in: school_type.map(d => new RegExp(d, 'i')) };
+            } else {
+                filter.school_type = { $regex: new RegExp(school_type, 'i') };
+            }
         }
         if (sector_name) {
             filter.sector_name = { $regex: new RegExp(sector_name, 'i') };
