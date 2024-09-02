@@ -53,7 +53,13 @@ const getAllSchools = async (req: Request, res: Response): Promise<any> => {
 const getSingleSchool = async (req: Request, res: Response): Promise<any> => {
     try {
         const schoolId = req.params.id;
-        const school: ISchool | null = await School.findById(schoolId);
+        const school: ISchool | null = await School
+            .findById(schoolId)
+            .populate({
+                path: 'combination_ids',
+                model: Combination,
+                select: '_id name abbreviation category_id description',
+            });;
 
         if (!school) {
             res.status(404).json({ error: "a school with that id doesnt exist" });
@@ -176,19 +182,19 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
                 filter.district_name = { $regex: new RegExp(district, 'i') };
             }
         }
-
         if (school_status) {
             if (Array.isArray(school_status)) {
-                filter.status = { $in: school_status.map(d => new RegExp(d, 'i')) };
+                filter.school_status = { $in: school_status };
             } else {
-                filter.school_status = { $regex: new RegExp(school_status, 'i') };
+                filter.school_status = school_status;
             }
         }
+
         if (school_type) {
             if (Array.isArray(school_type)) {
-                filter.type = { $in: school_type.map(d => new RegExp(d, 'i')) };
+                filter.school_type = { $in: school_type };
             } else {
-                filter.school_type = { $regex: new RegExp(school_type, 'i') };
+                filter.school_type = school_type;
             }
         }
         if (sector_name) {
