@@ -17,7 +17,7 @@ const URL: string = process.env.BACKEND_URL || `http://localhost:${PORT}`;
 
 
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://thehuye.com', '*'],
+    origin: ['http://localhost:5173', 'https://amashuri.thehuye.com', 'https://thehuye.com', '*'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
