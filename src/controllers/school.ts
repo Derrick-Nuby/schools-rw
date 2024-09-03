@@ -175,33 +175,38 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
             };
         }
 
+        const caseInsensitiveRegex = (value: string) => new RegExp(value, 'i');
+
         if (district) {
             if (Array.isArray(district)) {
-                filter.district_name = { $in: district.map(d => new RegExp(d, 'i')) };
+                filter.district_name = { $in: district.map(d => caseInsensitiveRegex(d)) };
             } else {
-                filter.district_name = { $regex: new RegExp(district, 'i') };
+                filter.district_name = { $regex: caseInsensitiveRegex(district) };
             }
         }
+
         if (school_status) {
             if (Array.isArray(school_status)) {
-                filter.school_status = { $in: school_status };
+                filter.school_status = { $in: school_status.map(status => caseInsensitiveRegex(status)) };
             } else {
-                filter.school_status = school_status;
+                filter.school_status = { $regex: caseInsensitiveRegex(school_status) };
             }
         }
 
         if (school_type) {
             if (Array.isArray(school_type)) {
-                filter.school_type = { $in: school_type };
+                filter.school_type = { $in: school_type.map(type => caseInsensitiveRegex(type)) };
             } else {
-                filter.school_type = school_type;
+                filter.school_type = { $regex: caseInsensitiveRegex(school_type) };
             }
         }
+
         if (sector_name) {
-            filter.sector_name = { $regex: new RegExp(sector_name, 'i') };
+            filter.sector_name = { $regex: caseInsensitiveRegex(sector_name) };
         }
+
         if (cell_name) {
-            filter.cell_name = { $regex: new RegExp(cell_name, 'i') };
+            filter.cell_name = { $regex: caseInsensitiveRegex(cell_name) };
         }
 
         if (combination_ids) {
@@ -247,6 +252,7 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
         res.status(500).json({ error: "Internal server error" });
     }
 };
+
 
 
 
