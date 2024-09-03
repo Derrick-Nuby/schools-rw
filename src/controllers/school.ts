@@ -226,6 +226,11 @@ const searchSchool = async (req: Request, res: Response): Promise<void> => {
                 select: '_id name abbreviation category_id description',
             });
 
+        if (schools.length <= 0) {
+            res.status(404).json({ error: "no schools found for your search; please search again" });
+            return;
+        }
+
         const totalSchools = await School.countDocuments(filter);
 
         res.json({
